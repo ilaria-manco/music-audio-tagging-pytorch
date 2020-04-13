@@ -9,7 +9,7 @@ class SampleDataset(Dataset):
     #  path to the tsv file
     #  path to the audio files / mel files?
 
-    def __init__(self, index_file, data_root, gt_file, preprocess=False):
+    def __init__(self, data_root, index_file, gt_file, preprocess=False):
         self.preprocess = preprocess
         if self.preprocess:
             self.data = self.preprocess_data()
@@ -37,12 +37,14 @@ class SampleDataset(Dataset):
         file_ids = []
         file_names = []
         labels = []
-        for i in range(0, len(self.index_file)):
-            file_id = self.index_file.iloc[i, 0]
+        for i in range(0, len(self.ground_truth)):
+            file_id = self.ground_truth.iloc[i, 0]
             file_ids.append(file_id)
-            file_names.append(self.index_file.iloc[i, 1])
-            # Map id to ground truth label
-            labels.append(self.ground_truth[self.ground_truth.iloc[:, 0] == file_id].iloc[:, 1])
+            labels.append(self.ground_truth.iloc[i, 1])
+            # Map id to file path
+            path_to_audio = list(self.index_file[self.index_file.iloc[:, 0] == file_id].iloc[:, 1])[0]
+            path_to_mel = path_to_audio[:path_to_audio.rfind(".")] + ".pk"
+            file_names.append(path_to_mel)
         return file_ids, file_names, labels
 
     def preprocess_data(*input_data):
