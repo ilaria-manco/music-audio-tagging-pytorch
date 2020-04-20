@@ -1,0 +1,4 @@
+numpy==1.15.0
+pandas==0.25.3
+torch==1.4.0
+torchaudio==0.4.0
