@@ -17,7 +17,7 @@ class SampleDataset(Dataset):
         self.random_sampling = random_sampling
         if self.preprocess:
             self.data = self.preprocess_data()
-        # if tsv, need to specify sep="\t". 
+        # if tsv, need to specify sep="\t".
         self.data_root = data_root
         # Index file: [id, file_path]
         self.index_file = pd.read_csv(data_root + index_file, sep="\t")
@@ -50,10 +50,12 @@ class SampleDataset(Dataset):
         for i in range(0, len(self.ground_truth)):
             file_id = self.ground_truth.iloc[i, 0]
             file_ids.append(file_id)
-            list_of_labels = [float(label) for label in self.ground_truth.iloc[i, 1].strip("[.]").split(",")]
+            list_of_labels = [
+                float(label) for label in self.ground_truth.iloc[i, 1].strip("[.]").split(",")]
             labels.append(list_of_labels)
             # Map id to file path
-            path_to_audio = list(self.index_file[self.index_file.iloc[:, 0] == file_id].iloc[:, 1])[0]
+            path_to_audio = list(
+                self.index_file[self.index_file.iloc[:, 0] == file_id].iloc[:, 1])[0]
             path_to_mel = path_to_audio[:path_to_audio.rfind(".")] + ".pk"
             file_names.append(path_to_mel)
         return file_ids, file_names, np.array(labels)

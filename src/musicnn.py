@@ -16,7 +16,8 @@ class Musicnn(nn.Module):
 
         self.level = level
 
-        self.front_end = FrontEnd(y_input_dim, filter_type, k_height_factor, k_width_factor, filter_factor)
+        self.front_end = FrontEnd(
+            y_input_dim, filter_type, k_height_factor, k_width_factor, filter_factor)
 
         if self.level == "front_end":
             self.dense1 = nn.Linear(in_features=36924, out_features=200)
@@ -38,7 +39,7 @@ class Musicnn(nn.Module):
         x = F.relu(self.dense1(x))
         x = self.sigmoid(self.dense2(x))
         return x
-        
+
 
 class FrontEnd(nn.Module):
     """Musically motivated CNN front-end single layer http://mtg.upf.edu/node/3508.
@@ -50,6 +51,7 @@ class FrontEnd(nn.Module):
       (i.e. the number of output channels)
 
     """
+
     def __init__(self, y_input_dim, filter_type, k_height_factor, k_width_factor, filter_factor):
         super(FrontEnd, self).__init__()
         self.y_input_dim = y_input_dim
@@ -77,7 +79,7 @@ class FrontEnd(nn.Module):
         k_w = int(self.y_input_dim * self.k_width)
         self.out_channels = int(self.filter_factor * 32)
         return nn.Conv2d(in_channels=1, out_channels=self.out_channels, kernel_size=(1, k_w))
-        
+
     def forward(self, x):
         x = F.relu(self.conv(x))
         x = self.batch_norm(x)
@@ -94,6 +96,7 @@ class MidEnd(nn.Module):
       (i.e. the number of output channels)
 
     """
+
     def __init__(self, input_dim, num_of_filters=64):
         super(MidEnd, self).__init__()
         # TODO: check padding and input dimensions
@@ -101,16 +104,19 @@ class MidEnd(nn.Module):
         self.num_of_filters = num_of_filters
 
         # LAYER 1
-        self.conv1 = nn.Conv1d(self.input_channels, self.num_of_filters, kernel_size=7, padding=3)
+        self.conv1 = nn.Conv1d(self.input_channels,
+                               self.num_of_filters, kernel_size=7, padding=3)
         self.batch_norm1 = nn.BatchNorm1d(num_features=self.num_of_filters)
         # LAYER 2
         # TODO add residual connection
         nn.init.xavier_uniform_(self.conv1.weight)
-        self.conv2 = nn.Conv1d(self.num_of_filters, self.num_of_filters, kernel_size=7, padding=3)
+        self.conv2 = nn.Conv1d(self.num_of_filters,
+                               self.num_of_filters, kernel_size=7, padding=3)
         self.batch_norm2 = nn.BatchNorm1d(num_features=self.num_of_filters)
         # LAYER 3
         nn.init.xavier_uniform_(self.conv2.weight)
-        self.conv3 = nn.Conv1d(self.num_of_filters, self.num_of_filters, kernel_size=7, padding=3)
+        self.conv3 = nn.Conv1d(self.num_of_filters,
+                               self.num_of_filters, kernel_size=7, padding=3)
         self.batch_norm3 = nn.BatchNorm1d(num_features=self.num_of_filters)
 
     def forward(self, x):
@@ -125,7 +131,7 @@ class MidEnd(nn.Module):
         res_conv2 = out_bn_conv2 + out_bn_conv1
 
         # TODO double check with musiccnn-training repo
-        # no batch normalisation there 
+        # no batch normalisation there
         x = F.relu(self.conv3(x))
         out_bn_conv3 = self.batch_norm3(x)
         res_conv3 = res_conv2 + out_bn_conv3
@@ -147,12 +153,15 @@ class BackEnd(nn.Module):
 
         # LAYERS
         self.flat = Flatten()
-        self.batch_norm = nn.BatchNorm1d(num_features=self.feature_map.shape[0])
+        self.batch_norm = nn.BatchNorm1d(
+            num_features=self.feature_map.shape[0])
         self.flat_pool_dropout = nn.Dropout()
-        self.dense = nn.Linear(in_features=self.feature_map.shape[0], out_features=self.output_units)
+        self.dense = nn.Linear(
+            in_features=self.feature_map.shape[0], out_features=self.output_units)
         self.bn_dense = nn.BatchNorm1d(num_features=self.output_units)
         self.dense_dropout = nn.Dropout()
-        self.dense2 = nn.Linear(in_features=self.output_units, out_features=self.num_of_classes)
+        self.dense2 = nn.Linear(
+            in_features=self.output_units, out_features=self.num_of_classes)
 
     def forward(self):
         # temporal pooling

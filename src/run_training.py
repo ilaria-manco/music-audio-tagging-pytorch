@@ -1,4 +1,4 @@
-  
+
 """
 Ilaria Manco 2020
 ECS7013P - Deep Learning for Audio and Music 
@@ -23,7 +23,8 @@ if __name__ == '__main__':
     config = config_file.config_training
 
     # 1. Load config parameters used in 'preprocess_data.py'
-    config_json = config_file.DATA_PATH + config_file.DATASET + "/" + config_file.DATASET + config['melspectrograms_path'] + 'config.json'
+    config_json = config_file.DATA_PATH + config_file.DATASET + "/" + \
+        config_file.DATASET + config['melspectrograms_path'] + 'config.json'
     with open(config_json, "r") as f:
         params = json.load(f)
     config['audio_rep'] = params
@@ -36,8 +37,10 @@ if __name__ == '__main__':
         random_sampling = True
         print(random_sampling)
     # Load training and validation data
-    training_set = SampleDataset(config_file.DATA_PATH, config["index_file"], config["gt_train"], config['x_input_dim'], random_sampling)
-    validation_set = SampleDataset(config_file.DATA_PATH, config["index_file"], config["gt_val"], config['x_input_dim'])
+    training_set = SampleDataset(
+        config_file.DATA_PATH, config["index_file"], config["gt_train"], config['x_input_dim'], random_sampling)
+    validation_set = SampleDataset(
+        config_file.DATA_PATH, config["index_file"], config["gt_val"], config['x_input_dim'])
 
     config['classes_vector'] = list(range(config['num_classes_dataset']))
 
@@ -47,7 +50,8 @@ if __name__ == '__main__':
 
     # 3. Save experimental settings
     experiment_id = str(time.strftime('%Y-%m-%d-%H_%M_%S', time.gmtime()))
-    model_folder = config_file.DATA_PATH + 'experiments/' + str(experiment_id) + '/'
+    model_folder = config_file.DATA_PATH + \
+        'experiments/' + str(experiment_id) + '/'
     if not os.path.exists(model_folder):
         os.makedirs(model_folder)
     json.dump(config, open(model_folder + 'config.json', 'w'))
@@ -62,10 +66,11 @@ if __name__ == '__main__':
         print('Pre-trained model loaded!')
     else:
         model = build_model(config['model_name'], config['y_input_dim'])
-    
+
     # 5. Write headers of the train_log.tsv
     log_file = open(model_folder + 'train_log.tsv', 'a')
-    log_file.write('Time_stamp\tepoch\ttrain_loss\tval_loss\tepoch_time\tlearing_rate\n')
+    log_file.write(
+        'Time_stamp\tepoch\ttrain_loss\tval_loss\tepoch_time\tlearing_rate\n')
     log_file.close()
 
     # 6. Start training
@@ -77,4 +82,5 @@ if __name__ == '__main__':
 
     print('Training started..')
 
-    train(training_set, validation_set, model, learning_rate, weight_decay, epochs, batch_size, patience, model_folder)
+    train(training_set, validation_set, model, learning_rate,
+          weight_decay, epochs, batch_size, patience, model_folder)
