@@ -27,24 +27,28 @@ DATASET = 'mtt'  # 'mtt' or 'musicradar'
 
 config_training = {
     "name_run": "",
+
     # data
     "melspectrograms_path": "_mels/",
     "gt_train": DATASET + "/train_gt_" + DATASET + ".tsv",
     "gt_val": DATASET + "/val_gt_" + DATASET + ".tsv",
     "index_file": DATASET + "/index_" + DATASET + ".tsv",
+
     # input setup
     "n_frames": 187,
     "pre-processing": "log_compression",
     "train_sampling": "random",
-    # "training
-    # training parameters
+
+    # learning parameters
+    "model_name": "77timbral_midend",
     "load_model": None,
     "epochs": 600,
     "batch_size": 32,
     "weight_decay": 1e-5,
     "learning_rate": 0.001,
     "optimizer": "Adam",
-    "patience": 75,
+    "patience": 40,
+
     # experiment settings
     "num_classes_dataset": 50,
     "val_batch_size": 32
