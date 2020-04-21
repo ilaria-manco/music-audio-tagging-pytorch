@@ -1,5 +1,7 @@
-import torch
+import pickle
+import numpy as np
 import pandas as pd
+import random
 from torch.utils.data import Dataset
 
 
@@ -9,8 +11,10 @@ class SampleDataset(Dataset):
     #  path to the tsv file
     #  path to the audio files / mel files?
 
-    def __init__(self, data_root, index_file, gt_file, preprocess=False):
+    def __init__(self, data_root, index_file, gt_file, x_input_dim, random_sampling=True, preprocess=False):
         self.preprocess = preprocess
+        self.x_input_dim = x_input_dim
+        self.random_sampling = random_sampling
         if self.preprocess:
             self.data = self.preprocess_data()
         # if tsv, need to specify sep="\t". 
@@ -23,11 +27,17 @@ class SampleDataset(Dataset):
 
     def __getitem__(self, index):
         # format the file path and load the file
-        path = self.data_root + "/" + self.file_names[index]
-        mel_spec = torch.load(path)
-        # TODO: add log compression
+        path = self.data_root + "mtt/mtt_mels/" + self.file_names[index]
+        mel_spec = pickle.load(open(path, 'rb'))
+        mel_spec = np.log10(10000 * mel_spec + 1)
 
-        return mel_spec, self.labels[index]
+        x_dim, y_dim, _ = mel_spec.shape
+        last_frame = int(x_dim - int(self.x_input_dim)) + 1
+        if self.random_sampling:
+            time_stamp = random.randint(0, last_frame - 1)
+            mel_spec = mel_spec[time_stamp: time_stamp + self.x_input_dim, :]
+
+        return mel_spec.T, self.labels[index]
 
     def __len__(self):
         return len(self.file_names)
@@ -40,12 +50,13 @@ class SampleDataset(Dataset):
         for i in range(0, len(self.ground_truth)):
             file_id = self.ground_truth.iloc[i, 0]
             file_ids.append(file_id)
-            labels.append(self.ground_truth.iloc[i, 1])
+            list_of_labels = [float(label) for label in self.ground_truth.iloc[i, 1].strip("[.]").split(",")]
+            labels.append(list_of_labels)
             # Map id to file path
             path_to_audio = list(self.index_file[self.index_file.iloc[:, 0] == file_id].iloc[:, 1])[0]
             path_to_mel = path_to_audio[:path_to_audio.rfind(".")] + ".pk"
             file_names.append(path_to_mel)
-        return file_ids, file_names, labels
+        return file_ids, file_names, np.array(labels)
 
     def preprocess_data(*input_data):
         raise NotImplementedError
