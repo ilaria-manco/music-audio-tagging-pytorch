@@ -32,6 +32,7 @@ config_training = {
     "melspectrograms_path": "_mels/",
     "gt_train": DATASET + "/train_gt_" + DATASET + ".tsv",
     "gt_val": DATASET + "/val_gt_" + DATASET + ".tsv",
+    "gt_test": DATASET + "/test_gt_" + DATASET + ".tsv",
     "index_file": DATASET + "/index_" + DATASET + ".tsv",
 
     # input setup
@@ -47,7 +48,7 @@ config_training = {
     "weight_decay": 1e-5,
     "learning_rate": 0.001,
     "optimizer": "Adam",
-    "patience": 40,
+    "patience": 75,
 
     # experiment settings
     "num_classes_dataset": 50,
