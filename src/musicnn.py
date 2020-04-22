@@ -22,22 +22,23 @@ class Musicnn(nn.Module):
         if self.level == "front_end":
             self.dense1 = nn.Linear(in_features=36924, out_features=200)
         elif self.level == "mid_end":
-            input_dim = (204, 1, 181)
-            self.midend = MidEnd(input_dim)
-            self.dense1 = nn.Linear(in_features=34752, out_features=200)
+            front_end_channels = self.front_end.out_channels
+            self.midend = MidEnd(front_end_channels)
+            # self.dense1 = nn.Linear(in_features=34752, out_features=200)
+            # self.dense1 = nn.Linear(in_features=35904, out_features=200)
 
-        self.dense2 = nn.Linear(in_features=200, out_features=50)
+        self.back_end = BackEnd(50)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
         x = self.front_end(x)
+        x = self.midend(x)
+        x = self.back_end(x)
+        x = self.sigmoid(x)
 
-        if self.level == "mid_end":
-            x = self.midend(x)
-
-        x = x.view(x.size(0), -1)
-        x = F.relu(self.dense1(x))
-        x = self.sigmoid(self.dense2(x))
+        # x = x.view(x.size(0), -1)
+        # x = F.relu(self.dense1(x))
+        # x = self.sigmoid(self.dense2(x))
         return x
 
 
@@ -55,35 +56,38 @@ class FrontEnd(nn.Module):
     def __init__(self, y_input_dim, filter_type, k_height_factor, k_width_factor, filter_factor):
         super(FrontEnd, self).__init__()
         self.y_input_dim = y_input_dim
-        self.k_height = k_height_factor
-        self.k_width = k_width_factor
         self.filter_type = filter_type
         self.filter_factor = filter_factor
+        self.k_h = int(self.y_input_dim * k_height_factor)
+        self.k_w = int(self.y_input_dim * k_width_factor)
 
         # 1 convolutional layer
         if self.filter_type == "timbral":
             self.conv = self.timbral_block()
+            max_pool_size = self.y_input_dim - self.k_h + 1
+            self.pool = nn.MaxPool2d(kernel_size=(max_pool_size, 1), stride=(max_pool_size, 1))
         if self.filter_type == "temporal":
             self.conv = self.temporal_block()
 
         nn.init.xavier_uniform_(self.conv.weight)
         self.batch_norm = nn.BatchNorm2d(num_features=self.out_channels)
-        self.pool = nn.MaxPool2d(kernel_size=(30, 1), stride=(30, 1))
 
     def timbral_block(self):
-        k_h = int(self.y_input_dim * self.k_height)
         self.out_channels = int(self.filter_factor * 128)
-        return nn.Conv2d(in_channels=1, out_channels=self.out_channels, kernel_size=(k_h, 7))
+        # return nn.Conv2d(in_channels=1, out_channels=self.out_channels, kernel_size=(self.k_h, 7))
+        return nn.Conv2d(in_channels=1, out_channels=self.out_channels, kernel_size=(self.k_h, 7), padding=(0, 3))
 
     def temporal_block(self):
-        k_w = int(self.y_input_dim * self.k_width)
         self.out_channels = int(self.filter_factor * 32)
-        return nn.Conv2d(in_channels=1, out_channels=self.out_channels, kernel_size=(1, k_w))
+        # return nn.Conv2d(in_channels=1, out_channels=self.out_channels, kernel_size=(1, self.k_w))
+        return nn.Conv2d(in_channels=1, out_channels=self.out_channels, kernel_size=(1, self.k_w), padding=(0, 3))
 
     def forward(self, x):
         x = F.relu(self.conv(x))
         x = self.batch_norm(x)
         x = self.pool(x)
+        # TODO comment below for old model
+        x = torch.squeeze(x)
 
         return x
 
@@ -97,10 +101,9 @@ class MidEnd(nn.Module):
 
     """
 
-    def __init__(self, input_dim, num_of_filters=64):
+    def __init__(self, input_channels, num_of_filters=64):
         super(MidEnd, self).__init__()
-        # TODO: check padding and input dimensions
-        self.input_channels, self.input_w, self.input_h = input_dim
+        self.input_channels = input_channels
         self.num_of_filters = num_of_filters
 
         # LAYER 1
@@ -108,7 +111,6 @@ class MidEnd(nn.Module):
                                self.num_of_filters, kernel_size=7, padding=3)
         self.batch_norm1 = nn.BatchNorm1d(num_features=self.num_of_filters)
         # LAYER 2
-        # TODO add residual connection
         nn.init.xavier_uniform_(self.conv1.weight)
         self.conv2 = nn.Conv1d(self.num_of_filters,
                                self.num_of_filters, kernel_size=7, padding=3)
@@ -120,64 +122,60 @@ class MidEnd(nn.Module):
         self.batch_norm3 = nn.BatchNorm1d(num_features=self.num_of_filters)
 
     def forward(self, x):
-        # TODO: add padding before each convolution
-        # x = F.pad(x, p1d, 'constant', 0)
-        x = x.view(x.shape[0], x.shape[1], x.shape[3])
-        x = F.relu(self.conv1(x))
-        out_bn_conv1 = self.batch_norm1(x)
+        # comment line below out
+        # x = x.view(x.shape[0], x.shape[1], x.shape[3])
+        out_conv1 = F.relu(self.conv1(x))
+        out_bn_conv1 = self.batch_norm1(out_conv1)
 
-        x = F.relu(self.conv2(out_bn_conv1))
-        out_bn_conv2 = self.batch_norm2(x)
-        res_conv2 = out_bn_conv2 + out_bn_conv1
+        out_conv2 = F.relu(self.conv2(out_bn_conv1))
+        out_bn_conv2 = self.batch_norm2(out_conv2)
+        # res_conv2 = out_bn_conv2 + out_bn_conv1
+        res_conv2 = out_conv2 + out_bn_conv1
 
-        # TODO double check with musiccnn-training repo
-        # no batch normalisation there
-        x = F.relu(self.conv3(x))
-        out_bn_conv3 = self.batch_norm3(x)
-        res_conv3 = res_conv2 + out_bn_conv3
+        # TODO double check with musiccnn-training repo: 
+        # why is bn computed but not used?
+        out_conv3 = F.relu(self.conv3(out_bn_conv2))
+        out_bn_conv3 = self.batch_norm3(out_conv3)
+        res_conv3 = res_conv2 + out_conv3
 
-        out = torch.stack((out_bn_conv1, res_conv2, res_conv3))
-        out = out.view(out.shape[1], out.shape[0] * out.shape[2], out.shape[3])
-
+        out = torch.cat((out_bn_conv1, res_conv2, res_conv3), dim=1)
         return out
 
 
 class BackEnd(nn.Module):
     """Back end. WIP """
 
-    def __init__(self, feature_map, number_of_classes, output_units):
+    def __init__(self, output_units):
         super(BackEnd, self).__init__()
-        self.feature_map = feature_map
         self.output_units = output_units
-        self.num_of_classes = number_of_classes
 
         # LAYERS
+        self.mean_pool = nn.AvgPool2d(kernel_size=(187, 1))
+        self.max_pool = nn.MaxPool2d(kernel_size=(187, 1))
         self.flat = Flatten()
-        self.batch_norm = nn.BatchNorm1d(
-            num_features=self.feature_map.shape[0])
+        self.batch_norm = nn.BatchNorm1d(374)
         self.flat_pool_dropout = nn.Dropout()
-        self.dense = nn.Linear(
-            in_features=self.feature_map.shape[0], out_features=self.output_units)
-        self.bn_dense = nn.BatchNorm1d(num_features=self.output_units)
+        self.dense = nn.Linear(in_features=374, out_features=200)
+        self.bn_dense = nn.BatchNorm1d(200)
         self.dense_dropout = nn.Dropout()
-        self.dense2 = nn.Linear(
-            in_features=self.output_units, out_features=self.num_of_classes)
 
-    def forward(self):
+        self.dense2 = nn.Linear(in_features=200, out_features=50)
+
+    def forward(self, x):
         # temporal pooling
-        max_pool = torch.max(self.feature_map, axis=1)
-        mean_pool = torch.mean(self.feature_map, axes=[1])
-        tmp_pool = torch.cat([max_pool, mean_pool], 2)
+        max_pool = self.max_pool(x)
+        mean_pool = self.mean_pool(x)
+        tmp_pool = tmp_pool = torch.cat((max_pool, mean_pool), dim=2)
 
-        # penultimate dense layer
-        flat_pool = self.flatten(tmp_pool)
+        flat_pool = self.flat(tmp_pool)
         flat_pool = self.batch_norm(flat_pool)
         flat_pool_dropout = self.flat_pool_dropout(flat_pool)
+        
         dense = F.relu(self.dense(flat_pool_dropout))
         bn_dense = self.bn_dense(dense)
         dense_dropout = self.dense_dropout(bn_dense)
-        logits = self.dense2(dense_dropout)
-        return logits, bn_dense, mean_pool, max_pool
+        out = self.dense2(dense_dropout)
+        return out
 
 
 class Flatten(nn.Module):
