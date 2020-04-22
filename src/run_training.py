@@ -13,7 +13,7 @@ import os
 import torch
 import time
 from train import train, build_model
-from dataset import SampleDataset
+from dataset import MTTDataset
 
 if __name__ == '__main__':
     os.environ["CUDA_VISIBLE_DEVICES"] = "3"
@@ -37,9 +37,9 @@ if __name__ == '__main__':
         random_sampling = True
         print(random_sampling)
     # Load training and validation data
-    training_set = SampleDataset(
+    training_set = MTTDataset(
         config_file.DATA_PATH, config["index_file"], config["gt_train"], config['x_input_dim'], random_sampling)
-    validation_set = SampleDataset(
+    validation_set = MTTDataset(
         config_file.DATA_PATH, config["index_file"], config["gt_val"], config['x_input_dim'])
 
     config['classes_vector'] = list(range(config['num_classes_dataset']))

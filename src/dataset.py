@@ -5,7 +5,7 @@ import random
 from torch.utils.data import Dataset
 
 
-class SampleDataset(Dataset):
+class MTTDataset(Dataset):
     # wrapper for the dataset
     # Argument List
     #  path to the tsv file
