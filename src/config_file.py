@@ -1,11 +1,9 @@
 DATA_PATH = "/homes/im311/dl4am/data/"
 NO_POOLING_MODEL = DATA_PATH + "experiments/2020-04-21-13_58_40/best_model.pth.tar" 
 # TEMP_POOLING_MODEL is complete. 
-# Trained with patience = 75, initial lr=0.001 (too small?)
+# Trained with patience = 75, initial lr=0.001
 TEMP_POOLING_MODEL = DATA_PATH + "experiments/2020-04-22-13_42_14/best_model.pth.tar" 
-# TEMP_POOLING_MODEL is complete (still training now). 
-# Trained with patience = 40, initial lr=0.01. Early stopping correctly implemented!
-ATTENTION_MODEL = DATA_PATH + "experiments/2020-04-23-10_40_19/best_model.pth.tar" 
+ATTENTION_MODEL = DATA_PATH + "experiments/2020-04-23-18_15_55/best_model.pth.tar" 
 
 config_preprocess = {
     'mtt_spec': {
