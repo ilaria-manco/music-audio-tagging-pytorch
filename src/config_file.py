@@ -48,7 +48,7 @@ config_training = {
     "train_sampling": "random",
 
     # learning parameters
-    "model_name": "77timbral_midend",
+    "model_name": "77timbral_attention",
     "load_model": None,
     "epochs": 600,
     "batch_size": 32,
