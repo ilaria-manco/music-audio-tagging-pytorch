@@ -1,10 +1,11 @@
 from torch import nn
 import torch
 import time
+import numpy as np
 from torch.optim import Adam, lr_scheduler
 from torch.utils.data import DataLoader
 import training_utils
-from musicnn import FrontEnd, MidEnd, BackEnd, Musicnn
+from musicnn import Musicnn
 
 
 def train(training_set, validation_set, model, learning_rate, weight_decay, epochs, batch_size, patience, model_folder):
@@ -24,10 +25,11 @@ def train(training_set, validation_set, model, learning_rate, weight_decay, epoc
     model.to(cuda_device)
 
     k_patience = 0
+    best_val = np.Inf
 
     for epoch in range(epochs):
+        # Training iteration
         epoch_start_time = time.time()
-
         train_loss = train_epoch(
             model, criterion, optimizer, train_loader, cuda_device, is_training=True)
         val_loss = train_epoch(model, criterion, optimizer,
@@ -35,12 +37,23 @@ def train(training_set, validation_set, model, learning_rate, weight_decay, epoc
         # Decrease the learning rate after not improving in the validation set
         scheduler.step(val_loss)
 
+        # check if val loss has been improving during patience period. If not, stop
+        is_val_improving = scheduler.is_better(val_loss, best_val)
+        if not is_val_improving:
+            k_patience += 1
+        if k_patience > patience:
+            print("Early Stopping")
+            break
+
+        best_val = scheduler.best
+
         time_stamp = str(time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()))
         epoch_time = time.time() - epoch_start_time
+        lr = optimizer.param_groups[0]['lr']
         print('Epoch %d, train loss %g, val loss %g, epoch-time %gs, lr %g, time-stamp %s' %
-              (epoch + 1, train_loss, val_loss, epoch_time, learning_rate, time_stamp))
+              (epoch + 1, train_loss, val_loss, epoch_time, lr, time_stamp))
         training_utils.update_training_log(
-            model_folder, epoch + 1, train_loss, val_loss, epoch_time, learning_rate, time_stamp)
+            model_folder, epoch + 1, train_loss, val_loss, epoch_time, lr, time_stamp)
 
         checkpoint = {
             'epoch': epoch + 1,
@@ -48,17 +61,9 @@ def train(training_set, validation_set, model, learning_rate, weight_decay, epoc
             'optimizer': optimizer.state_dict()
         }
 
+        # save checkpoint in appropriate path (new or best)
         training_utils.save_checkpoint(
-            checkpoint, scheduler.is_better, model_folder)
-
-        # TODO: early stopping
-        # Early stopping: keep the best model in validation set
-        if not scheduler.is_better:
-            k_patience += 1
-
-        if k_patience > patience:
-            print("Early Stopping")
-            break
+            checkpoint, is_val_improving, model_folder)
 
 
 def train_epoch(model, criterion, optimizer, data_loader, cuda_device, is_training):
