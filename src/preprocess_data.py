@@ -10,7 +10,6 @@ from pathlib import Path
 
 def compute_melspectrograms(audio_file, melspec_file, config):
     audio, sr = torchaudio.load(audio_file)
-    # TODO currently no resampling
     mel_spectrogram = torchaudio.transforms.MelSpectrogram(sample_rate=sr,
                                                            hop_length=config["hop_length"],
                                                            n_fft=config["n_ftt"],
