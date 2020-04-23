@@ -8,25 +8,29 @@ This implementation is still a WIP and does not strictly follow the musicnn arch
 git clone https://github.com/ilaria-manco/dl4am
 ```
 Create a virtual environment and activate it
-```bash
+```
+bash
 python3 -m venv env
 source venv/bin/activate
 ```
 Install the required dependencies 
-```bash
-pip install -r requirements.txt 
+```
+bash pip install -r requirements.txt 
 ```
 ## Training the model
 If you want to retrain the model on the MTT dataset, you'll have to download this first from [here](http://mirg.city.ac.uk/codeapps/the-magnatagatune-dataset). After doing this, change ```config_file.py``` to point to the correct paths where the data is stored and then preprocess the audio files by running
-```python run_preprocessing.py --mtt         
+```
+python run_preprocessing.py --mtt         
 ```
 Then you can use the following script for training, after changing the parameters in ```config_file.py```, if necessary.
-```python run_training.py         
+```
+python run_training.py         
 ```
 
 ## Using the pre-trained model
 This repo also contains 3 pre-trained model ready to use. For example, you can extract the outputs tags by running
-```python extract_features.py --input_audio --output_path --model_number    
+```
+python extract_features.py --input_audio --output_path --model_number    
 ```
 For model_number, 2 is the one found to perform better in the preliminary evaluation and is therefore recommended.
 
