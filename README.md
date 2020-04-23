@@ -9,13 +9,12 @@ git clone https://github.com/ilaria-manco/dl4am
 ```
 Create a virtual environment and activate it
 ```
-bash
 python3 -m venv env
 source venv/bin/activate
 ```
 Install the required dependencies 
 ```
-bash pip install -r requirements.txt 
+pip install -r requirements.txt 
 ```
 ## Training the model
 If you want to retrain the model on the MTT dataset, you'll have to download this first from [here](http://mirg.city.ac.uk/codeapps/the-magnatagatune-dataset). After doing this, change ```config_file.py``` to point to the correct paths where the data is stored and then preprocess the audio files by running
