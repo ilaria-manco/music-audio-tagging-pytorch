@@ -6,11 +6,6 @@ from torch.utils.data import Dataset
 
 
 class MTTDataset(Dataset):
-    # wrapper for the dataset
-    # Argument List
-    #  path to the tsv file
-    #  path to the audio files / mel files?
-
     def __init__(self, data_root, index_file, gt_file, x_input_dim, random_sampling=True, preprocess=False):
         self.preprocess = preprocess
         self.x_input_dim = x_input_dim

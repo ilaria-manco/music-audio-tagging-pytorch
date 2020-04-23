@@ -11,23 +11,16 @@ class Musicnn(nn.Module):
     https://github.com/jordipons/musicnn/
     """
 
-    def __init__(self, level, y_input_dim, filter_type, k_height_factor, k_width_factor, filter_factor):
+    def __init__(self, y_input_dim, filter_type, k_height_factor, k_width_factor, filter_factor, pool_type):
         super(Musicnn, self).__init__()
-
-        self.level = level
-
+        self.pool_type = pool_type
         self.front_end = FrontEnd(
             y_input_dim, filter_type, k_height_factor, k_width_factor, filter_factor)
 
-        if self.level == "front_end":
-            self.dense1 = nn.Linear(in_features=36924, out_features=200)
-        elif self.level == "mid_end":
-            front_end_channels = self.front_end.out_channels
-            self.midend = MidEnd(front_end_channels)
-            # self.dense1 = nn.Linear(in_features=34752, out_features=200)
-            # self.dense1 = nn.Linear(in_features=35904, out_features=200)
+        front_end_channels = self.front_end.out_channels
+        self.midend = MidEnd(front_end_channels)
 
-        self.back_end = BackEnd(50)
+        self.back_end = BackEnd(50, self.pool_type)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
@@ -35,10 +28,6 @@ class Musicnn(nn.Module):
         x = self.midend(x)
         x = self.back_end(x)
         x = self.sigmoid(x)
-
-        # x = x.view(x.size(0), -1)
-        # x = F.relu(self.dense1(x))
-        # x = self.sigmoid(self.dense2(x))
         return x
 
 
@@ -65,7 +54,8 @@ class FrontEnd(nn.Module):
         if self.filter_type == "timbral":
             self.conv = self.timbral_block()
             max_pool_size = self.y_input_dim - self.k_h + 1
-            self.pool = nn.MaxPool2d(kernel_size=(max_pool_size, 1), stride=(max_pool_size, 1))
+            self.pool = nn.MaxPool2d(kernel_size=(
+                max_pool_size, 1), stride=(max_pool_size, 1))
         if self.filter_type == "temporal":
             self.conv = self.temporal_block()
 
@@ -87,7 +77,7 @@ class FrontEnd(nn.Module):
         x = self.batch_norm(x)
         x = self.pool(x)
         # TODO comment below for old model
-        x = torch.squeeze(x)
+        # x = torch.squeeze(x)
 
         return x
 
@@ -123,7 +113,7 @@ class MidEnd(nn.Module):
 
     def forward(self, x):
         # comment line below out
-        # x = x.view(x.shape[0], x.shape[1], x.shape[3])
+        x = x.view(x.shape[0], x.shape[1], x.shape[3])
         out_conv1 = F.relu(self.conv1(x))
         out_bn_conv1 = self.batch_norm1(out_conv1)
 
@@ -132,7 +122,7 @@ class MidEnd(nn.Module):
         # res_conv2 = out_bn_conv2 + out_bn_conv1
         res_conv2 = out_conv2 + out_bn_conv1
 
-        # TODO double check with musiccnn-training repo: 
+        # TODO double check with musiccnn-training repo:
         # why is bn computed but not used?
         out_conv3 = F.relu(self.conv3(out_bn_conv2))
         out_bn_conv3 = self.batch_norm3(out_conv3)
@@ -143,34 +133,51 @@ class MidEnd(nn.Module):
 
 
 class BackEnd(nn.Module):
-    """Back end. WIP """
-
-    def __init__(self, output_units):
+    def __init__(self, output_units, pool_type):
         super(BackEnd, self).__init__()
         self.output_units = output_units
+        self.pool_type = pool_type
 
-        # LAYERS
-        self.mean_pool = nn.AvgPool2d(kernel_size=(187, 1))
-        self.max_pool = nn.MaxPool2d(kernel_size=(187, 1))
+        # TODO add pool_type as argument after implementing attention
+        # temporal pooling
+        if self.pool_type == "temporal":
+            self.mean_pool = nn.AvgPool2d(kernel_size=(187, 1))
+            self.max_pool = nn.MaxPool2d(kernel_size=(187, 1))
+            self.batch_norm = nn.BatchNorm1d(374)
+            self.dense = nn.Linear(in_features=374, out_features=200)
+            self.bn_dense = nn.BatchNorm1d(200)
+            self.dense2 = nn.Linear(in_features=200, out_features=50)
+        # attention
+        elif self.pool_type == "attention":
+            context = 3
+            self.attention = nn.Conv1d(in_channels=192,
+                                       out_channels=192,
+                                       kernel_size=context,
+                                       padding=int(context / 3))
+            self.softmax = nn.Softmax(dim=1)
+            self.batch_norm = nn.BatchNorm1d(192)
+            self.dense = nn.Linear(in_features=192, out_features=100)
+            self.bn_dense = nn.BatchNorm1d(100)
+            self.dense2 = nn.Linear(in_features=100, out_features=50)
+
         self.flat = Flatten()
-        self.batch_norm = nn.BatchNorm1d(374)
         self.flat_pool_dropout = nn.Dropout()
-        self.dense = nn.Linear(in_features=374, out_features=200)
-        self.bn_dense = nn.BatchNorm1d(200)
         self.dense_dropout = nn.Dropout()
 
-        self.dense2 = nn.Linear(in_features=200, out_features=50)
-
     def forward(self, x):
-        # temporal pooling
-        max_pool = self.max_pool(x)
-        mean_pool = self.mean_pool(x)
-        tmp_pool = tmp_pool = torch.cat((max_pool, mean_pool), dim=2)
+        if self.pool_type == "temporal":
+            max_pool = self.max_pool(x)
+            mean_pool = self.mean_pool(x)
+            tmp_pool = torch.cat((max_pool, mean_pool), dim=2)
+        elif self.pool_type == "attention":
+            attention_weights = self.softmax(self.attention(x))
+            tmp_pool = torch.mul(attention_weights, x)
+            tmp_pool = torch.sum(tmp_pool, dim=2)
 
         flat_pool = self.flat(tmp_pool)
         flat_pool = self.batch_norm(flat_pool)
         flat_pool_dropout = self.flat_pool_dropout(flat_pool)
-        
+
         dense = F.relu(self.dense(flat_pool_dropout))
         bn_dense = self.bn_dense(dense)
         dense_dropout = self.dense_dropout(bn_dense)
