@@ -3,6 +3,7 @@ import numpy as np
 from sklearn import metrics
 import config_file
 import torch
+import argparse
 from dataset import MTTDataset
 from extract_features import split_spectrogram
 from models.simple_musicnn import SimpleMusicnn
@@ -88,7 +89,8 @@ def plot_roc(roc_auc_points, tpr, fpr, n_classes):
     plt.ylabel('True Positive Rate')
     plt.title('Receiver operating characteristic')
     plt.legend(loc="lower right")
-    plt.savefig(config_file.DATA_PATH + "roc_model1.png", tpi=400)
+    # plt.savefig(config_file.DATA_PATH + "roc_model1.png", tpi=400)
+    plt.show()
 
 
 def evaluate(test_dataset, model_number):
@@ -150,6 +152,12 @@ def evaluate(test_dataset, model_number):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Compute mel spectrogram of input audio")
+    parser.add_argument("model_number", type=str, help="number of pretrained model to load - 2 is best")
+    args = parser.parse_args()
+
+    model_number = args.model_number
+
     config = config_file.config_training
     TEST_BATCH_SIZE = 1
     FILE_INDEX = config_file.DATASET + config['index_file']
@@ -157,7 +165,7 @@ if __name__ == '__main__':
 
     test_dataset = MTTDataset(
         config_file.DATA_PATH, config["index_file"], config["gt_test"], 187, random_sampling=False)
-    predictions, ground_truth = evaluate(test_dataset, model_number="2")
+    predictions, ground_truth = evaluate(test_dataset, model_number)
     mean_roc, mean_auc, roc_auc_points, tpr, fpr = calculate_auc(
         predictions, ground_truth)
     print(mean_roc, mean_auc)
