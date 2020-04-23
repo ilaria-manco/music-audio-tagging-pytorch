@@ -27,7 +27,7 @@ python run_training.py
 ```
 
 ## Using the pre-trained model
-This repo also contains 3 pre-trained model ready to use. For example, you can extract the outputs tags by running
+This repo also contains 3 pre-trained models ready to use. For example, you can extract the output tags by running
 ```
 python extract_features.py --input_audio --output_path --model_number    
 ```
@@ -35,7 +35,8 @@ For model_number, 2 is the one found to perform better in the preliminary evalua
 
 ## Evaluating the model
 The evaluation script computes two metrics, mean ROC AUC and mean PR AUC and produces a plot of the two metrics over the TFR vs FPR. The evaluation is done on 5328 test data samples from the MTT. 
-```python evaluate.py --model_number    
+```
+python evaluate.py --model_number    
 ```
 
 ## References
