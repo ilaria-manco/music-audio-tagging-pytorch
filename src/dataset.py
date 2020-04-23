@@ -32,7 +32,7 @@ class MTTDataset(Dataset):
             time_stamp = random.randint(0, last_frame - 1)
             mel_spec = mel_spec[time_stamp: time_stamp + self.x_input_dim, :]
 
-        return mel_spec.T, self.labels[index]
+        return mel_spec.T, self.labels[index], self.file_ids[index]
 
     def __len__(self):
         return len(self.file_names)

@@ -1,12 +1,3 @@
-
-"""
-Ilaria Manco 2020
-ECS7013P - Deep Learning for Audio and Music 
-Coursework
-File: run_training.py
-Description: 
-"""
-
 import config_file
 import json
 import os

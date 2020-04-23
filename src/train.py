@@ -5,7 +5,7 @@ import numpy as np
 from torch.optim import Adam, lr_scheduler
 from torch.utils.data import DataLoader
 import training_utils
-from musicnn import Musicnn
+from models.musicnn import Musicnn
 
 
 def train(training_set, validation_set, model, learning_rate, weight_decay, epochs, batch_size, patience, model_folder):
