@@ -41,7 +41,8 @@ def train(training_set, validation_set, model, learning_rate, weight_decay, epoc
         is_val_improving = scheduler.is_better(val_loss, best_val)
         if not is_val_improving:
             k_patience += 1
-        if k_patience > patience:
+        if k_patience > patience * 3:
+            # Increase patience since adaptive learning rate is changed AFTER this step
             print("Early Stopping")
             break
 
@@ -72,7 +73,7 @@ def train_epoch(model, criterion, optimizer, data_loader, cuda_device, is_traini
     n_batches = 0
 
     for i, batch in enumerate(data_loader):
-        features, labels = batch
+        features, labels, file_ids = batch
         labels = labels.float()
         X = features.to(device=cuda_device)
         y = labels.to(device=cuda_device)
@@ -93,11 +94,11 @@ def train_epoch(model, criterion, optimizer, data_loader, cuda_device, is_traini
 
 
 def build_model(model_name, y_input_dim):
-    if model_name == "77timbral_midend":
-        model = Musicnn(level="mid_end", y_input_dim=y_input_dim, filter_type="timbral",
-                        k_height_factor=0.7, k_width_factor=1., filter_factor=1.6)
-    else:
-        model = Musicnn(level="front_end", y_input_dim=y_input_dim, filter_type="timbral",
-                        k_height_factor=0.7, k_width_factor=1., filter_factor=1.6)
+    if model_name == "77timbral_temporal":
+        model = Musicnn(y_input_dim=y_input_dim, filter_type="timbral",
+                        k_height_factor=0.7, k_width_factor=1., filter_factor=1.6, pool_type="temporal")
+    elif model_name == "77timbral_attention":
+        model = Musicnn(y_input_dim=y_input_dim, filter_type="timbral",
+                        k_height_factor=0.7, k_width_factor=1., filter_factor=1.6, pool_type="attention")
 
     return model
