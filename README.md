@@ -5,7 +5,7 @@ This implementation is still a WIP and does not strictly follow the musicnn arch
 
 ## Installation
 ```
-git clone https://github.com/ilaria-manco/dl4am
+git clone https://github.com/ilaria-manco/music-audio-tagging-pytorch
 ```
 Create a virtual environment and activate it
 ```
@@ -26,17 +26,25 @@ Then you can use the following script for training, after changing the parameter
 python run_training.py         
 ```
 
-## Using the pre-trained model
-This repo also contains 3 pre-trained models ready to use. For example, you can extract the output tags by running
-```
-python extract_features.py --input_audio --output_path --model_number    
-```
-For model_number, 2 is the one found to perform better in the preliminary evaluation and is therefore recommended.
-
 ## Evaluating the model
 The evaluation script computes two metrics, mean ROC AUC and mean PR AUC and produces a plot of the two metrics over the TFR vs FPR. The evaluation is done on 5328 test data samples from the MTT. 
 ```
 python evaluate.py --model_number    
+```
+
+## Using the pre-trained model
+This repo also contains 3 pre-trained models ready to use. 
+
+### Extract the output features
+You can extract the output tags by running
+```
+python extract_features.py --input_audio --output_path --model_number    
+```
+For model_number, 2 is the one found to perform better in the preliminary evaluation and is therefore recommended.
+### Get the top N tags
+An example of sample recognition can be found in this [Jupyter notebook](https://github.com/ilaria-manco/music-audio-tagging-pytorch/blob/master/src/Sample%20Recognition.ipynb)
+```
+python extract_features.py --input_audio --num_samples    
 ```
 
 ## References
