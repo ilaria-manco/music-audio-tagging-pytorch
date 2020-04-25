@@ -1,4 +1,4 @@
-# CNN for Music Audio Tagging
+# CNN for Music Audio Tagging (WIP)
 
 A PyTorch implementation of the musicnn model by Jordi Pons [1], a CNN-based audio feature extractor and tagger.
 This implementation is still a WIP and does not strictly follow the musicnn architecture (e.g. so far only one type of convolutional filter is used in the first layer of the front end, instead of the five different types in the original model).
