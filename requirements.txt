@@ -84,7 +84,7 @@ sklearn==0.0
 snowballstemmer==2.0.0
 SoundFile==0.10.3.post1
 tensorboard==1.14.0
-tensorflow==1.14.0
+tensorflow==1.15.2
 tensorflow-estimator==1.14.0
 tensorflow-gpu==1.14.0
 termcolor==1.1.0
