@@ -15,16 +15,6 @@ config_preprocess = {
         "n_ftt": 512,                                                   # number of frequency bins of the FFT (frame size = length of FFT window)
         "n_mels": 96,                                                   # number of mel bands
         "resample_sr": 16000
-    },
-    'musicradar_spec': {
-        # first 3 keys are dataset dependent
-        "identifier": "musicradar",
-        "index_file": "index_musicradar.tsv",
-        "audio_path": "",                   # path to the audio files
-        "hop_length": 256,                  # hop length for the FFT (number of samples between successive frames)
-        "n_ftt": 512,                       # number of frequency bins of the FFT (frame size = length of FFT window)
-        "n_mels": 96,                       # number of mel bands
-        "resample_sr": 16000
     }
 }
 

@@ -42,7 +42,6 @@ python extract_features.py --input_audio --output_path --model_number
 ```
 For model_number, 2 is the one found to perform better in the preliminary evaluation and is therefore recommended.
 ### Get the top N tags
-An example of sample recognition can be found in this [Jupyter notebook](https://github.com/ilaria-manco/music-audio-tagging-pytorch/blob/master/src/Sample%20Recognition.ipynb)
 ```
 python extract_features.py --input_audio --num_samples    
 ```
