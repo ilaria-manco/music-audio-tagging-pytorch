@@ -39,7 +39,7 @@ config_training = {
     "train_sampling": "random",
 
     # learning parameters
-    "model_name": "77timbral_temporal",
+    "model_name": "timbral_temporal",
     "load_model": None,
     "epochs": 600,
     "batch_size": 32,
