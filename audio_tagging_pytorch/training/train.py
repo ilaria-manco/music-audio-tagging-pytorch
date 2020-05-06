@@ -111,16 +111,14 @@ def train_epoch(model, criterion, optimizer, data_loader, cuda_device,
 def build_model(model_name, y_input_dim):
     if model_name == "77timbral_temporal":
         model = Musicnn(y_input_dim=y_input_dim,
-                        filter_type="timbral",
-                        k_height_factor=0.7,
-                        k_width_factor=1.,
+                        timbral_k_height=[0.4, 0.7],
+                        temporal_k_width=[32, 64, 128],
                         filter_factor=1.6,
                         pool_type="temporal")
     elif model_name == "77timbral_attention":
         model = Musicnn(y_input_dim=y_input_dim,
-                        filter_type="timbral",
-                        k_height_factor=0.7,
-                        k_width_factor=1.,
+                        timbral_k_height=[0.4, 0.7],
+                        temporal_k_width=[32, 64, 128],
                         filter_factor=1.6,
                         pool_type="attention")
 

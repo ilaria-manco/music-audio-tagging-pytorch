@@ -108,16 +108,16 @@ def evaluate(test_dataset, model_number):
         path_to_model = config_file.TEMP_POOLING_MODEL
         model = Musicnn(y_input_dim=96,
                         filter_type="timbral",
-                        k_height_factor=0.7,
-                        k_width_factor=1.,
+                        timbral_k_height=0.7,
+                        temporal_k_width=1.,
                         filter_factor=1.6,
                         pool_type="temporal")
     elif model_number == "3":
         path_to_model = config_file.ATTENTION_MODEL
         model = Musicnn(y_input_dim=96,
                         filter_type="timbral",
-                        k_height_factor=0.7,
-                        k_width_factor=1.,
+                        timbral_k_height=0.7,
+                        temporal_k_width=1.,
                         filter_factor=1.6,
                         pool_type="attention")
     print(path_to_model)
