@@ -1,10 +1,11 @@
-import config_file
 import json
 import os
 import torch
 import time
-from train import train, build_model
-from dataset import MTTDataset
+
+import config_file
+from audio_tagging_pytorch.training.train import train, build_model
+from audio_tagging_pytorch.datasets.mtt import MTTDataset
 
 if __name__ == '__main__':
     os.environ["CUDA_VISIBLE_DEVICES"] = "2"

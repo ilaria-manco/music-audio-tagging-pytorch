@@ -1,19 +1,18 @@
 import os
 import numpy as np
-from sklearn import metrics
-import config_file
 import torch
 import argparse
-from dataset import MTTDataset
-from extract_features import split_spectrogram
-from models.simple_musicnn import SimpleMusicnn
-from models.musicnn import Musicnn
-from torch.utils.data import DataLoader
 from scipy import interp
 from matplotlib import pyplot as plt
 from itertools import cycle
 import seaborn as sns
+from sklearn import metrics
+from torch.utils.data import DataLoader
 
+import config_file
+from extract_features import split_spectrogram
+from audio_tagging_pytorch.datasets.mtt import MTTDataset
+from audio_tagging_pytorch.models.musicnn import Musicnn
 
 def calculate_auc(predictions, ground_truth):
     y_pred = []
@@ -89,7 +88,7 @@ def plot_roc(roc_auc_points, tpr, fpr, n_classes):
     plt.ylabel('True Positive Rate')
     plt.title('Receiver operating characteristic')
     plt.legend(loc="lower right")
-    # plt.savefig(config_file.DATA_PATH + "roc_model1.png", tpi=400)
+    # plt.savefig(config_file.DATA_PATH + "roc_mode3.png", tpi=400)
     plt.show()
 
 
@@ -98,12 +97,7 @@ def evaluate(test_dataset, model_number):
     cuda_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     test_loader = DataLoader(test_dataset, TEST_BATCH_SIZE)
-
-    if model_number == "1":
-        path_to_model = config_file.NO_POOLING_MODEL
-        model = SimpleMusicnn(level="mid_end", y_input_dim=96, filter_type="timbral",
-                              k_height_factor=0.7, k_width_factor=1., filter_factor=1.6)
-    elif model_number == "2":
+    if model_number == "2":
         path_to_model = config_file.TEMP_POOLING_MODEL
         model = Musicnn(y_input_dim=96, filter_type="timbral", k_height_factor=0.7,
                         k_width_factor=1., filter_factor=1.6, pool_type="temporal")

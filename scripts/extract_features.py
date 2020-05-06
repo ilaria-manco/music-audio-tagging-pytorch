@@ -6,9 +6,7 @@ import pickle
 import os
 from math import log10, floor
 import librosa
-from models.musicnn import Musicnn
-from models.simple_musicnn import SimpleMusicnn
-
+from audio_tagging_pytorch.models.musicnn import Musicnn
 
 def obtain_audio_rep(audio_path, mel_path):
     if not os.path.exists(mel_path):
@@ -47,11 +45,7 @@ def get_top_tags(model_output, n_tags, patch_boundaries=None):
 
 def extract_model_features(mel_spec, model_number):
     inputs = split_spectrogram(mel_spec)
-
-    if model_number == "1":
-        path_to_model = config_file.NO_POOLING_MODEL
-        model = SimpleMusicnn(level="mid_end", y_input_dim=96, filter_type="timbral", k_height_factor=0.7, k_width_factor=1., filter_factor=1.6)
-    elif model_number == "2":
+    if model_number == "2":
         path_to_model = config_file.TEMP_POOLING_MODEL
         model = Musicnn(y_input_dim=96, filter_type="timbral", k_height_factor=0.7, k_width_factor=1., filter_factor=1.6, pool_type="temporal")
     elif model_number == "3":

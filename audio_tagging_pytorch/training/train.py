@@ -4,9 +4,9 @@ import time
 import numpy as np
 from torch.optim import Adam, lr_scheduler
 from torch.utils.data import DataLoader
-import training_utils
-from models.musicnn import Musicnn
 
+from audio_tagging_pytorch.models.musicnn import Musicnn
+from audio_tagging_pytorch.training.training_utils import update_training_log, save_checkpoint
 
 def train(training_set, validation_set, model, learning_rate, weight_decay, epochs, batch_size, patience, model_folder):
     cuda_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -53,7 +53,7 @@ def train(training_set, validation_set, model, learning_rate, weight_decay, epoc
         lr = optimizer.param_groups[0]['lr']
         print('Epoch %d, train loss %g, val loss %g, epoch-time %gs, lr %g, time-stamp %s' %
               (epoch + 1, train_loss, val_loss, epoch_time, lr, time_stamp))
-        training_utils.update_training_log(
+        update_training_log(
             model_folder, epoch + 1, train_loss, val_loss, epoch_time, lr, time_stamp)
 
         checkpoint = {
@@ -63,8 +63,7 @@ def train(training_set, validation_set, model, learning_rate, weight_decay, epoc
         }
 
         # save checkpoint in appropriate path (new or best)
-        training_utils.save_checkpoint(
-            checkpoint, is_val_improving, model_folder)
+        save_checkpoint(checkpoint, is_val_improving, model_folder)
 
 
 def train_epoch(model, criterion, optimizer, data_loader, cuda_device, is_training):
