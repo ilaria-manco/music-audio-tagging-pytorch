@@ -29,10 +29,11 @@ if __name__ == '__main__':
         random_sampling = True
         print(random_sampling)
     # Load training and validation data
-    training_set = MTTDataset(
-        config_file.DATA_PATH, config["index_file"], config["gt_train"], config['x_input_dim'], random_sampling)
-    validation_set = MTTDataset(
-        config_file.DATA_PATH, config["index_file"], config["gt_val"], config['x_input_dim'])
+    training_set = MTTDataset(config_file.DATA_PATH, config["index_file"],
+                              config["gt_train"], config['x_input_dim'],
+                              random_sampling)
+    validation_set = MTTDataset(config_file.DATA_PATH, config["index_file"],
+                                config["gt_val"], config['x_input_dim'])
 
     config['classes_vector'] = list(range(config['num_classes_dataset']))
 
@@ -74,5 +75,5 @@ if __name__ == '__main__':
 
     print('Training started..')
 
-    train(training_set, validation_set, model, learning_rate,
-          weight_decay, epochs, batch_size, patience, model_folder)
+    train(training_set, validation_set, model, learning_rate, weight_decay,
+          epochs, batch_size, patience, model_folder)

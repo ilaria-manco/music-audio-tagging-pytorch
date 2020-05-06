@@ -14,6 +14,7 @@ from extract_features import split_spectrogram
 from audio_tagging_pytorch.datasets.mtt import MTTDataset
 from audio_tagging_pytorch.models.musicnn import Musicnn
 
+
 def calculate_auc(predictions, ground_truth):
     y_pred = []
     y_true = []
@@ -37,15 +38,15 @@ def compute_auc(y_true, y_pred):
     tpr = dict()
     roc_auc_points = dict()
     for count in range(n_classes):
-        fpr[count], tpr[count], _ = metrics.roc_curve(
-            true[:, count], estimated[:, count])
+        fpr[count], tpr[count], _ = metrics.roc_curve(true[:, count],
+                                                      estimated[:, count])
         roc_auc_points[count] = metrics.auc(fpr[count], tpr[count])
         fpr["micro"], tpr["micro"], _ = metrics.roc_curve(
             true.ravel(), estimated.ravel())
         roc_auc_points["micro"] = metrics.auc(fpr["micro"], tpr["micro"])
         try:
-            roc_metric = metrics.roc_auc_score(
-                true[:, count], estimated[:, count])
+            roc_metric = metrics.roc_auc_score(true[:, count],
+                                               estimated[:, count])
             pr_auc_metric = metrics.average_precision_score(
                 true[:, count], estimated[:, count])
         except:
@@ -73,13 +74,19 @@ def plot_roc(roc_auc_points, tpr, fpr, n_classes):
     # Plot all ROC curves
     plt.figure()
     sns.set_style("white")
-    plt.plot(fpr["micro"], tpr["micro"],
+    plt.plot(fpr["micro"],
+             tpr["micro"],
              label='micro-average ROC curve (area = {0:0.2f})'
-             ''.format(roc_auc_points["micro"]), linestyle=':', linewidth=4)
+             ''.format(roc_auc_points["micro"]),
+             linestyle=':',
+             linewidth=4)
 
-    plt.plot(fpr["macro"], tpr["macro"],
+    plt.plot(fpr["macro"],
+             tpr["macro"],
              label='macro-average ROC curve (area = {0:0.2f})'
-             ''.format(roc_auc_points["macro"]), linestyle=':', linewidth=4)
+             ''.format(roc_auc_points["macro"]),
+             linestyle=':',
+             linewidth=4)
 
     plt.plot([0, 1], [0, 1], 'k--', lw=2)
     plt.xlim([0.0, 1.0])
@@ -99,12 +106,20 @@ def evaluate(test_dataset, model_number):
     test_loader = DataLoader(test_dataset, TEST_BATCH_SIZE)
     if model_number == "2":
         path_to_model = config_file.TEMP_POOLING_MODEL
-        model = Musicnn(y_input_dim=96, filter_type="timbral", k_height_factor=0.7,
-                        k_width_factor=1., filter_factor=1.6, pool_type="temporal")
+        model = Musicnn(y_input_dim=96,
+                        filter_type="timbral",
+                        k_height_factor=0.7,
+                        k_width_factor=1.,
+                        filter_factor=1.6,
+                        pool_type="temporal")
     elif model_number == "3":
         path_to_model = config_file.ATTENTION_MODEL
-        model = Musicnn(y_input_dim=96, filter_type="timbral", k_height_factor=0.7,
-                        k_width_factor=1., filter_factor=1.6, pool_type="attention")
+        model = Musicnn(y_input_dim=96,
+                        filter_type="timbral",
+                        k_height_factor=0.7,
+                        k_width_factor=1.,
+                        filter_factor=1.6,
+                        pool_type="attention")
     print(path_to_model)
 
     model.eval()
@@ -133,10 +148,10 @@ def evaluate(test_dataset, model_number):
                 id_key = int(file_id[0])
                 if id_key not in ground_truth.keys():
                     ground_truth[id_key] = torch.Tensor.cpu(y).numpy()
-                    if 50 - np.count_nonzero(torch.Tensor.cpu(y).numpy()) == 50:
+                    if 50 - np.count_nonzero(
+                            torch.Tensor.cpu(y).numpy()) == 50:
                         print(id_key)
-                    predictions[id_key] = [
-                        torch.Tensor.cpu(output).numpy()]
+                    predictions[id_key] = [torch.Tensor.cpu(output).numpy()]
                 else:
                     predictions[id_key].append(
                         [torch.Tensor.cpu(output).numpy()])
@@ -146,8 +161,11 @@ def evaluate(test_dataset, model_number):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Compute mel spectrogram of input audio")
-    parser.add_argument("model_number", type=str, help="number of pretrained model to load - 2 is best")
+    parser = argparse.ArgumentParser(
+        description="Compute mel spectrogram of input audio")
+    parser.add_argument("model_number",
+                        type=str,
+                        help="number of pretrained model to load - 2 is best")
     args = parser.parse_args()
 
     model_number = args.model_number
@@ -157,8 +175,11 @@ if __name__ == '__main__':
     FILE_INDEX = config_file.DATASET + config['index_file']
     FILE_GROUND_TRUTH_TEST = config_file.DATASET + config['gt_test']
 
-    test_dataset = MTTDataset(
-        config_file.DATA_PATH, config["index_file"], config["gt_test"], 187, random_sampling=False)
+    test_dataset = MTTDataset(config_file.DATA_PATH,
+                              config["index_file"],
+                              config["gt_test"],
+                              187,
+                              random_sampling=False)
     predictions, ground_truth = evaluate(test_dataset, model_number)
     mean_roc, mean_auc, roc_auc_points, tpr, fpr = calculate_auc(
         predictions, ground_truth)

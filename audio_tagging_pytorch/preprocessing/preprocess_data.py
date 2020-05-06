@@ -10,10 +10,11 @@ from pathlib import Path
 
 def compute_melspectrograms(audio_file, melspec_file, config):
     audio, sr = torchaudio.load(audio_file)
-    mel_spectrogram = torchaudio.transforms.MelSpectrogram(sample_rate=sr,
-                                                           hop_length=config["hop_length"],
-                                                           n_fft=config["n_ftt"],
-                                                           n_mels=config["n_mels"])(audio).T
+    mel_spectrogram = torchaudio.transforms.MelSpectrogram(
+        sample_rate=sr,
+        hop_length=config["hop_length"],
+        n_fft=config["n_ftt"],
+        n_mels=config["n_mels"])(audio).T
     print(mel_spectrogram.shape)
     length = mel_spectrogram.shape[0]
 
@@ -32,17 +33,21 @@ def preprocess(files, config):
                 # TODO move block below out of if statement after first rerun
             length = compute_melspectrograms(audio_file, melspec_file, config)
             # index.tsv writing
-            fw = open(config_file.DATA_PATH +
-                      config['melspectrogram_path'] + ".tsv", "a")
-            fw.write("%s\t%s\t%s\n" % (file_id, melspec_file[len(
-                config_file.DATA_PATH):], audio_file[len(config_file.DATA_PATH):]))
+            fw = open(
+                config_file.DATA_PATH + config['melspectrogram_path'] + ".tsv",
+                "a")
+            fw.write("%s\t%s\t%s\n" %
+                     (file_id, melspec_file[len(config_file.DATA_PATH):],
+                      audio_file[len(config_file.DATA_PATH):]))
             fw.close()
-            print(str(file_index) + '/' + str(len(files)) +
-                  ' Computed: %s' % audio_file)
+            print(
+                str(file_index) + '/' + str(len(files)) +
+                ' Computed: %s' % audio_file)
 
         except Exception as e:
-            ferrors = open(config_file.DATA_PATH +
-                           config['melspectrogram_path'] + "errors" + ".txt", "a")
+            ferrors = open(
+                config_file.DATA_PATH + config['melspectrogram_path'] +
+                "errors" + ".txt", "a")
             ferrors.write(audio_file + "\n")
             ferrors.write(str(e))
             ferrors.close()

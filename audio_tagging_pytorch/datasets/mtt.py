@@ -6,7 +6,13 @@ from torch.utils.data import Dataset
 
 
 class MTTDataset(Dataset):
-    def __init__(self, data_root, index_file, gt_file, x_input_dim, random_sampling=True, preprocess=False):
+    def __init__(self,
+                 data_root,
+                 index_file,
+                 gt_file,
+                 x_input_dim,
+                 random_sampling=True,
+                 preprocess=False):
         self.preprocess = preprocess
         self.x_input_dim = x_input_dim
         self.random_sampling = random_sampling
@@ -30,7 +36,7 @@ class MTTDataset(Dataset):
         last_frame = int(x_dim - int(self.x_input_dim)) + 1
         if self.random_sampling:
             time_stamp = random.randint(0, last_frame - 1)
-            mel_spec = mel_spec[time_stamp: time_stamp + self.x_input_dim, :]
+            mel_spec = mel_spec[time_stamp:time_stamp + self.x_input_dim, :]
 
         return mel_spec.T, self.labels[index], self.file_ids[index]
 
@@ -46,11 +52,16 @@ class MTTDataset(Dataset):
             file_id = self.ground_truth.iloc[i, 0]
             file_ids.append(file_id)
             list_of_labels = [
-                float(label) for label in self.ground_truth.iloc[i, 1].strip("[.]").split(",")]
+                float(label)
+                for label in self.ground_truth.iloc[i,
+                                                    1].strip("[.]").split(",")
+            ]
             labels.append(list_of_labels)
             # Map id to file path
             path_to_audio = list(
-                self.index_file[self.index_file.iloc[:, 0] == file_id].iloc[:, 1])[0]
+                self.index_file[self.index_file.iloc[:,
+                                                     0] == file_id].iloc[:,
+                                                                         1])[0]
             path_to_mel = path_to_audio[:path_to_audio.rfind(".")] + ".pk"
             file_names.append(path_to_mel)
         return file_ids, file_names, np.array(labels)

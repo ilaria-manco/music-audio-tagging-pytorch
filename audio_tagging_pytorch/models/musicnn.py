@@ -10,12 +10,12 @@ class Musicnn(nn.Module):
     Model architecture and original Tensorflow implementation: Jordi Pons -
     https://github.com/jordipons/musicnn/
     """
-
-    def __init__(self, y_input_dim, filter_type, k_height_factor, k_width_factor, filter_factor, pool_type):
+    def __init__(self, y_input_dim, filter_type, k_height_factor,
+                 k_width_factor, filter_factor, pool_type):
         super(Musicnn, self).__init__()
         self.pool_type = pool_type
-        self.front_end = FrontEnd(
-            y_input_dim, filter_type, k_height_factor, k_width_factor, filter_factor)
+        self.front_end = FrontEnd(y_input_dim, filter_type, k_height_factor,
+                                  k_width_factor, filter_factor)
 
         front_end_channels = self.front_end.out_channels
         self.midend = MidEnd(front_end_channels)
@@ -41,8 +41,8 @@ class FrontEnd(nn.Module):
       (i.e. the number of output channels)
 
     """
-
-    def __init__(self, y_input_dim, filter_type, k_height_factor, k_width_factor, filter_factor):
+    def __init__(self, y_input_dim, filter_type, k_height_factor,
+                 k_width_factor, filter_factor):
         super(FrontEnd, self).__init__()
         self.y_input_dim = y_input_dim
         self.filter_type = filter_type
@@ -54,8 +54,8 @@ class FrontEnd(nn.Module):
         if self.filter_type == "timbral":
             self.conv = self.timbral_block()
             max_pool_size = self.y_input_dim - self.k_h + 1
-            self.pool = nn.MaxPool2d(kernel_size=(
-                max_pool_size, 1), stride=(max_pool_size, 1))
+            self.pool = nn.MaxPool2d(kernel_size=(max_pool_size, 1),
+                                     stride=(max_pool_size, 1))
         if self.filter_type == "temporal":
             self.conv = self.temporal_block()
 
@@ -65,12 +65,18 @@ class FrontEnd(nn.Module):
     def timbral_block(self):
         self.out_channels = int(self.filter_factor * 128)
         # return nn.Conv2d(in_channels=1, out_channels=self.out_channels, kernel_size=(self.k_h, 7))
-        return nn.Conv2d(in_channels=1, out_channels=self.out_channels, kernel_size=(self.k_h, 7), padding=(0, 3))
+        return nn.Conv2d(in_channels=1,
+                         out_channels=self.out_channels,
+                         kernel_size=(self.k_h, 7),
+                         padding=(0, 3))
 
     def temporal_block(self):
         self.out_channels = int(self.filter_factor * 32)
         # return nn.Conv2d(in_channels=1, out_channels=self.out_channels, kernel_size=(1, self.k_w))
-        return nn.Conv2d(in_channels=1, out_channels=self.out_channels, kernel_size=(1, self.k_w), padding=(0, 3))
+        return nn.Conv2d(in_channels=1,
+                         out_channels=self.out_channels,
+                         kernel_size=(1, self.k_w),
+                         padding=(0, 3))
 
     def forward(self, x):
         x = F.relu(self.conv(x))
@@ -90,7 +96,6 @@ class MidEnd(nn.Module):
       (i.e. the number of output channels)
 
     """
-
     def __init__(self, input_channels, num_of_filters=64):
         super(MidEnd, self).__init__()
         self.input_channels = input_channels
@@ -98,17 +103,23 @@ class MidEnd(nn.Module):
 
         # LAYER 1
         self.conv1 = nn.Conv1d(self.input_channels,
-                               self.num_of_filters, kernel_size=7, padding=3)
+                               self.num_of_filters,
+                               kernel_size=7,
+                               padding=3)
         self.batch_norm1 = nn.BatchNorm1d(num_features=self.num_of_filters)
         # LAYER 2
         nn.init.xavier_uniform_(self.conv1.weight)
         self.conv2 = nn.Conv1d(self.num_of_filters,
-                               self.num_of_filters, kernel_size=7, padding=3)
+                               self.num_of_filters,
+                               kernel_size=7,
+                               padding=3)
         self.batch_norm2 = nn.BatchNorm1d(num_features=self.num_of_filters)
         # LAYER 3
         nn.init.xavier_uniform_(self.conv2.weight)
         self.conv3 = nn.Conv1d(self.num_of_filters,
-                               self.num_of_filters, kernel_size=7, padding=3)
+                               self.num_of_filters,
+                               kernel_size=7,
+                               padding=3)
         self.batch_norm3 = nn.BatchNorm1d(num_features=self.num_of_filters)
 
     def forward(self, x):

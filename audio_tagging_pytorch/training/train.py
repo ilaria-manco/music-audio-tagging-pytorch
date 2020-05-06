@@ -8,7 +8,9 @@ from torch.utils.data import DataLoader
 from audio_tagging_pytorch.models.musicnn import Musicnn
 from audio_tagging_pytorch.training.training_utils import update_training_log, save_checkpoint
 
-def train(training_set, validation_set, model, learning_rate, weight_decay, epochs, batch_size, patience, model_folder):
+
+def train(training_set, validation_set, model, learning_rate, weight_decay,
+          epochs, batch_size, patience, model_folder):
     cuda_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     train_loader = DataLoader(training_set, batch_size=batch_size)
@@ -16,11 +18,15 @@ def train(training_set, validation_set, model, learning_rate, weight_decay, epoc
 
     criterion = nn.BCELoss()
 
-    optimizer = Adam(model.parameters(), lr=learning_rate,
+    optimizer = Adam(model.parameters(),
+                     lr=learning_rate,
                      weight_decay=weight_decay)
     # Adaptive learning rate
-    scheduler = lr_scheduler.ReduceLROnPlateau(
-        optimizer, mode='min', factor=0.5, patience=patience, verbose=True)
+    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer,
+                                               mode='min',
+                                               factor=0.5,
+                                               patience=patience,
+                                               verbose=True)
 
     model.to(cuda_device)
 
@@ -30,10 +36,18 @@ def train(training_set, validation_set, model, learning_rate, weight_decay, epoc
     for epoch in range(epochs):
         # Training iteration
         epoch_start_time = time.time()
-        train_loss = train_epoch(
-            model, criterion, optimizer, train_loader, cuda_device, is_training=True)
-        val_loss = train_epoch(model, criterion, optimizer,
-                               val_loader, cuda_device, is_training=False)
+        train_loss = train_epoch(model,
+                                 criterion,
+                                 optimizer,
+                                 train_loader,
+                                 cuda_device,
+                                 is_training=True)
+        val_loss = train_epoch(model,
+                               criterion,
+                               optimizer,
+                               val_loader,
+                               cuda_device,
+                               is_training=False)
         # Decrease the learning rate after not improving in the validation set
         scheduler.step(val_loss)
 
@@ -51,10 +65,11 @@ def train(training_set, validation_set, model, learning_rate, weight_decay, epoc
         time_stamp = str(time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()))
         epoch_time = time.time() - epoch_start_time
         lr = optimizer.param_groups[0]['lr']
-        print('Epoch %d, train loss %g, val loss %g, epoch-time %gs, lr %g, time-stamp %s' %
-              (epoch + 1, train_loss, val_loss, epoch_time, lr, time_stamp))
-        update_training_log(
-            model_folder, epoch + 1, train_loss, val_loss, epoch_time, lr, time_stamp)
+        print(
+            'Epoch %d, train loss %g, val loss %g, epoch-time %gs, lr %g, time-stamp %s'
+            % (epoch + 1, train_loss, val_loss, epoch_time, lr, time_stamp))
+        update_training_log(model_folder, epoch + 1, train_loss, val_loss,
+                            epoch_time, lr, time_stamp)
 
         checkpoint = {
             'epoch': epoch + 1,
@@ -66,7 +81,8 @@ def train(training_set, validation_set, model, learning_rate, weight_decay, epoc
         save_checkpoint(checkpoint, is_val_improving, model_folder)
 
 
-def train_epoch(model, criterion, optimizer, data_loader, cuda_device, is_training):
+def train_epoch(model, criterion, optimizer, data_loader, cuda_device,
+                is_training):
     running_loss = 0.0
     model.train()
     n_batches = 0
@@ -94,10 +110,18 @@ def train_epoch(model, criterion, optimizer, data_loader, cuda_device, is_traini
 
 def build_model(model_name, y_input_dim):
     if model_name == "77timbral_temporal":
-        model = Musicnn(y_input_dim=y_input_dim, filter_type="timbral",
-                        k_height_factor=0.7, k_width_factor=1., filter_factor=1.6, pool_type="temporal")
+        model = Musicnn(y_input_dim=y_input_dim,
+                        filter_type="timbral",
+                        k_height_factor=0.7,
+                        k_width_factor=1.,
+                        filter_factor=1.6,
+                        pool_type="temporal")
     elif model_name == "77timbral_attention":
-        model = Musicnn(y_input_dim=y_input_dim, filter_type="timbral",
-                        k_height_factor=0.7, k_width_factor=1., filter_factor=1.6, pool_type="attention")
+        model = Musicnn(y_input_dim=y_input_dim,
+                        filter_type="timbral",
+                        k_height_factor=0.7,
+                        k_width_factor=1.,
+                        filter_factor=1.6,
+                        pool_type="attention")
 
     return model

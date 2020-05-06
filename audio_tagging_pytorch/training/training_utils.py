@@ -6,11 +6,13 @@ def get_epoch_time():
     return int((datetime.now() - datetime(1970, 1, 1)).total_seconds())
 
 
-def update_training_log(model_folder, epoch, train_loss, val_loss, epoch_time, learning_rate, time_stamp):
+def update_training_log(model_folder, epoch, train_loss, val_loss, epoch_time,
+                        learning_rate, time_stamp):
     # log_file = open(model_folder + 'train_log.tsv', 'a')
     log_file = open(model_folder + 'train_log.tsv', 'a')
-    log_file.write('%d\t%g\t%g\t%gs\t%g\t%s\n' % (
-        epoch, train_loss, val_loss, epoch_time, learning_rate, time_stamp))
+    log_file.write(
+        '%d\t%g\t%g\t%gs\t%g\t%s\n' %
+        (epoch, train_loss, val_loss, epoch_time, learning_rate, time_stamp))
     log_file.close()
 
 
