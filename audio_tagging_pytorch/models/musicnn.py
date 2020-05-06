@@ -201,7 +201,6 @@ class BackEnd(nn.Module):
         self.dense_dropout = nn.Dropout()
 
     def forward(self, x):
-        print(x.shape)
         if self.pool_type == "temporal":
             max_pool = self.max_pool(x)
             mean_pool = self.mean_pool(x)
@@ -219,8 +218,6 @@ class BackEnd(nn.Module):
         bn_dense = self.bn_dense(dense)
         dense_dropout = self.dense_dropout(bn_dense)
         out = self.dense2(dense_dropout)
-
-        print(out.shape)
 
         return out
 
