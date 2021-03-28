@@ -55,6 +55,8 @@ def train(training_set, validation_set, model, learning_rate, weight_decay,
         is_val_improving = scheduler.is_better(val_loss, best_val)
         if not is_val_improving:
             k_patience += 1
+        else:
+            k_patience = 0
         if k_patience > patience * 3:
             # Increase patience since adaptive learning rate is changed AFTER this step
             print("Early Stopping")
