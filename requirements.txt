@@ -1,5 +1,5 @@
 audioread==2.1.8
 librosa==0.7.2
-numpy==1.15.0
+numpy==1.22.0
 pandas==0.25.3
 torch==1.4.0
